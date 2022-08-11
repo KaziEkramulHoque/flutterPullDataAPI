@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.pillar_test">
     
-    
+   <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="pillar_test"
         android:name="${applicationName}"

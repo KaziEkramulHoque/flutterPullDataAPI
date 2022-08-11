@@ -12,12 +12,12 @@ class RoutesClass {
   static List<GetPage> routes = [
     GetPage(
         name: pageOne,
-        page: () => const PageOne(),
+        page: () => PageOne(),
         transition: Transition.fade,
         transitionDuration: const Duration(seconds: 1)),
     GetPage(
         name: pageTwo,
-        page: () => const PageTwo(),
+        page: () => PageTwo(),
         transition: Transition.fade,
         transitionDuration: const Duration(seconds: 1)),
   ];

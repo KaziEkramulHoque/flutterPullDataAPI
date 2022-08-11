@@ -11,7 +11,7 @@ class HttpService {
       baseUrl: baseUrl,
     ));
 
-    initializeInterceptors();
+    // initializeInterceptors();
   }
 
   Future<Response> getRequest(String endPoint) async {
