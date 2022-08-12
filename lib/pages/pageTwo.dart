@@ -17,6 +17,7 @@ class PageTwo extends StatefulWidget {
 class _PageTwoState extends State<PageTwo> {
   bool isLoading = false;
   User user = Get.arguments;
+  String errmsg = "";
   late HttpService http;
   late int userId = user.id;
   late String userName = user.name;
@@ -25,17 +26,23 @@ class _PageTwoState extends State<PageTwo> {
   late List<Post> postList = [];
   late Post post;
   Future getposts() async {
-    Response response;
+    late Response activeResponse;
     try {
       isLoading = true;
 
-      response = await http.getRequest("posts?userId=$userId");
+      final response = await http.getRequest("posts?userId=$userId");
+
+      response.when(
+        (exception) => errmsg = "No Internet", // TODO: Handle exception
+        (response) =>
+            activeResponse = response, // TODO: Do something with location
+      );
 
       isLoading = false;
 
-      if (response.statusCode == 200) {
+      if (activeResponse.statusCode == 200) {
         setState(() {
-          postList = Post.postlistFromJson(response.data);
+          postList = Post.postlistFromJson(activeResponse.data);
           postList.sort((a, b) => a.title.length.compareTo(b.title.length));
         });
       } else {

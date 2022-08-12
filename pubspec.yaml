@@ -36,11 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.6.5
   dio: ^4.0.6
-  json_serializable: ^6.3.1
+  json_serializable: ^4.1.4
   google_fonts: ^3.0.1
   flutter_offline: ^2.1.0
   connectivity_plus: ^2.3.6+1
   internet_connection_checker: ^0.0.1+4
+  dio_http_cache: ^0.3.0
+  multiple_result: ^1.0.4
 
 dev_dependencies:
   flutter_test:
@@ -52,7 +54,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
-  build_runner: ^2.2.0
+  build_runner: ^2.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

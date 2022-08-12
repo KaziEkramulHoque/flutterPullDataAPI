@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:multiple_result/multiple_result.dart';
 import 'package:pillar_test/model/user.dart';
 
 class HttpService {
   late Dio _dio;
-
+  String error = "";
   final baseUrl = "https://jsonplaceholder.typicode.com/";
 
   HttpService() {
@@ -11,20 +14,23 @@ class HttpService {
       baseUrl: baseUrl,
     ));
 
-    // initializeInterceptors();
+    initializeInterceptors();
   }
 
-  Future<Response> getRequest(String endPoint) async {
+  Future<Result<Exception, Response>> getRequest(String endPoint) async {
     Response response;
 
     try {
       response = await _dio.get(endPoint);
-    } on DioError catch (e) {
-      print(e.message);
-      throw Exception(e.message);
-    }
+      return Success(response);
+    } on SocketException catch (e) {
+      print(e);
+      error = e.toString();
+      return Error(e);
 
-    return response;
+      //error = e.message;
+
+    }
   }
 
   // Future<List<User>?> getUsers(String endPoint) async {
