@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio_http_cache/dio_http_cache.dart';
 import 'package:multiple_result/multiple_result.dart';
 import 'package:pillar_test/model/user.dart';
 
@@ -14,6 +15,8 @@ class HttpService {
       baseUrl: baseUrl,
     ));
 
+    _dio.interceptors
+        .add(DioCacheManager(CacheConfig(baseUrl: baseUrl)).interceptor);
     initializeInterceptors();
   }
 
@@ -21,7 +24,13 @@ class HttpService {
     Response response;
 
     try {
-      response = await _dio.get(endPoint);
+      response = await _dio.get(endPoint,
+          options: buildCacheOptions(
+            Duration(days: 7), //duration of cache
+            //forceRefresh: refresh, //to force refresh
+            maxStale: Duration(days: 10), //before this time, if error like
+            //500, 500 happens, it will return cache
+          ));
       return Success(response);
     } on SocketException catch (e) {
       print(e);

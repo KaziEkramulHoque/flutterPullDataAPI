@@ -17,9 +17,9 @@ class PageOne extends StatefulWidget {
   _PageOneState createState() => _PageOneState();
 }
 
-class _PageOneState extends State<PageOne> {
-  // bool isLoading = false;
-  bool isInternet = false;
+class _PageOneState extends State<PageOne> with WidgetsBindingObserver {
+  bool isLoading = false;
+  bool isInternet = true;
   late HttpService http;
   var listener;
   // late ListUserResponse listUserResponse;
@@ -31,40 +31,22 @@ class _PageOneState extends State<PageOne> {
   String errmsg = ""; //to assing any error message from API/runtime
   //var apidata; //for decoded JSON data
   bool refresh = false; //for forcing refreshing cache
-  ConnectivityResult result = ConnectivityResult.none;
-  void startApplication() async {
-    await Future.wait([
-      getInternet(),
-      getListUser(),
-    ]);
-  }
-
-  // wait() async {
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //   await Future.delayed(const Duration(seconds: 5));
-  //   setState(() {
-  //     isLoading = false;
-  //   });
-  // }
+  //ConnectivityResult result = ConnectivityResult.none;
 
   //late User user;
   Future getListUser() async {
     late Response activeResponse;
 
     try {
-      loading = true;
-      // if (!isInternet) {
-      //   isLoading = false;
-      // }
-      //isInternet = await InternetConnectionChecker().hasConnection;
-      // if (!isInternet) {
-      //isLoading = false;
-      // }
-      // isLoading = false;
+      setState(() {
+        isLoading = true;
+      });
+
       final response = await http.getRequest("users");
-      loading = false;
+      setState(() {
+        isLoading = false;
+      });
+
       response.when(
         (exception) => loading = false, // TODO: Handle exception
         (response) =>
@@ -74,16 +56,12 @@ class _PageOneState extends State<PageOne> {
       if (activeResponse.statusCode == 200) {
         setState(() {
           userList = User.userlistFromJson(activeResponse.data);
-          loading = false;
+          isLoading = false;
         });
       } else {
         error = true;
-
-        loading = false;
+        isLoading = false;
       }
-      // loading = false;
-      // refresh = false;
-      // setState(() {});
     } on Exception catch (e) {
       error = true;
       loading = false;
@@ -91,46 +69,28 @@ class _PageOneState extends State<PageOne> {
     }
   }
 
-  // Future getInternet() async {
-  //   //Response response;
-  //   try {
-  //     //isLoading = true;
-  //     // var listioner = InternetConnectionStatus.values;
-  //     // isInternet = await InternetConnectionChecker().hasConnection;
-  //     // isLoading = false;
-
-  //     result = await Connectivity().checkConnectivity();
-
-  //     // if (!isInternet) {
-  //     //   isLoading = false;
-  //     // } else {
-  //     //   setState(() {
-  //     //     getListUser();
-  //     //     isLoading = false;
-  //     //   });
-  //     // }
-  //     loading = false;
-  //     // isLoading = false;
-
-  //   } on Exception catch (e) {
-  //     loading = false;
-  //     error = true;
-  //   }
-  // }
-
   Future getInternet() async {
     //isInternet = await InternetConnectionChecker().hasConnection;
     listener = InternetConnectionChecker().onStatusChange.listen((status) {
       switch (status) {
         case InternetConnectionStatus.connected:
-          isInternet = true;
+          setState(() {
+            isInternet = true;
+            isLoading = false;
+            getListUser();
+          });
+          Get.snackbar("Online", "Internet Conneted");
           //error = true;
           //isLoading = false;
           print('Data connection is available.');
           break;
         case InternetConnectionStatus.disconnected:
-          isInternet = false;
-          error = true;
+          setState(() {
+            isInternet = false;
+            error = true;
+          });
+          Get.snackbar("Offline", "Internet Disconneted");
+
           print('You are disconnected from the internet.');
           break;
       }
@@ -142,11 +102,12 @@ class _PageOneState extends State<PageOne> {
     //wait();
     http = HttpService();
     //startApplication();
-    getListUser();
     getInternet();
+    getListUser();
 
     // isLoading = false;
     super.initState();
+    //WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -179,56 +140,64 @@ class _PageOneState extends State<PageOne> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                      child: Text("No internet! Refresh"),
+                      child: Text("No internet.Show Offline Data"),
                       onPressed: () {
-                        isInternet = true;
-                        getListUser();
+                        setState(() {
+                          isInternet = true;
+                          getListUser();
+                        });
+                        if (userList.isEmpty) {
+                          isInternet = false;
+                          Get.snackbar("User Empty", "No Offline Data Found");
+                        }
                       }),
                 ],
               ),
             )
-          : RefreshIndicator(
-              onRefresh: () async {
-                refresh = true;
-                getListUser();
-              },
-              child: ListView.builder(
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () {
-                    Get.toNamed(RoutesClass.getPageTwoRoute(),
-                        arguments: userList[index]);
+          : isLoading
+              ? Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    refresh = true;
+                    getListUser();
                   },
-                  child: Card(
-                    //final user = userList[index];
-                    elevation: 6,
-                    margin: const EdgeInsets.all(10),
-                    color: Color.fromARGB(255, 100, 98, 98),
-                    child: ListTile(
-                      title: Text(
-                        userList[index].name,
-                        textAlign: TextAlign.justify,
-                        style: GoogleFonts.didactGothic(
-                            // fontFamily: "Rbotoo",
-                            fontSize: 20,
-                            color: Color.fromARGB(255, 231, 33, 120)),
-                      ),
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                            "https://w7.pngwing.com/pngs/627/97/png-transparent-avatar-web-development-computer-network-avatar-game-web-design-heroes-thumbnail.png"),
-                      ),
-                      subtitle: Text(
-                        userList[index].email,
-                        textAlign: TextAlign.justify,
-                        style: GoogleFonts.didactGothic(
-                            // fontFamily: "Rbotoo",
-                            fontSize: 15,
-                            color: Colors.white),
+                  child: ListView.builder(
+                    itemBuilder: (context, index) => GestureDetector(
+                      onTap: () {
+                        Get.toNamed(RoutesClass.getPageTwoRoute(),
+                            arguments: userList[index]);
+                      },
+                      child: Card(
+                        //final user = userList[index];
+                        elevation: 6,
+                        margin: const EdgeInsets.all(10),
+                        color: Color.fromARGB(255, 100, 98, 98),
+                        child: ListTile(
+                          title: Text(
+                            userList[index].name,
+                            textAlign: TextAlign.justify,
+                            style: GoogleFonts.didactGothic(
+                                // fontFamily: "Rbotoo",
+                                fontSize: 20,
+                                color: Color.fromARGB(255, 231, 33, 120)),
+                          ),
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                "https://w7.pngwing.com/pngs/627/97/png-transparent-avatar-web-development-computer-network-avatar-game-web-design-heroes-thumbnail.png"),
+                          ),
+                          subtitle: Text(
+                            userList[index].email,
+                            textAlign: TextAlign.justify,
+                            style: GoogleFonts.didactGothic(
+                                // fontFamily: "Rbotoo",
+                                fontSize: 15,
+                                color: Colors.white),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                itemCount: userList.length,
-              )),
+                    itemCount: userList.length,
+                  )),
 
       // : Center(
       //     child: Text("No User Object"),

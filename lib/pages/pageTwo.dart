@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:pillar_test/model/post.dart';
 import 'dart:convert';
 import 'package:pillar_test/model/user.dart';
@@ -29,11 +30,11 @@ class _PageTwoState extends State<PageTwo> {
     late Response activeResponse;
     try {
       isLoading = true;
-
+      final isInternet = await InternetConnectionChecker().hasConnection;
       final response = await http.getRequest("posts?userId=$userId");
 
       response.when(
-        (exception) => errmsg = "No Internet", // TODO: Handle exception
+        (exception) => isLoading = false, // TODO: Handle exception
         (response) =>
             activeResponse = response, // TODO: Do something with location
       );
@@ -47,6 +48,7 @@ class _PageTwoState extends State<PageTwo> {
         });
       } else {
         print("There is some problem status code not 200");
+        isLoading = false;
       }
     } on Exception catch (e) {
       isLoading = false;
