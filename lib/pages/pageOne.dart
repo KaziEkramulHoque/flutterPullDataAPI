@@ -22,16 +22,14 @@ class _PageOneState extends State<PageOne> with WidgetsBindingObserver {
   bool isInternet = true;
   late HttpService http;
   var listener;
-  // late ListUserResponse listUserResponse;
-  //String json;
+
   late List<User> userList = [];
 
   bool error = false; //for error status
   bool loading = false; //for data featching status
   String errmsg = ""; //to assing any error message from API/runtime
-  //var apidata; //for decoded JSON data
-  bool refresh = false; //for forcing refreshing cache
-  //ConnectivityResult result = ConnectivityResult.none;
+
+  bool refresh = false;
 
   //late User user;
   Future getListUser() async {
@@ -70,7 +68,6 @@ class _PageOneState extends State<PageOne> with WidgetsBindingObserver {
   }
 
   Future getInternet() async {
-    //isInternet = await InternetConnectionChecker().hasConnection;
     listener = InternetConnectionChecker().onStatusChange.listen((status) {
       switch (status) {
         case InternetConnectionStatus.connected:
@@ -80,8 +77,6 @@ class _PageOneState extends State<PageOne> with WidgetsBindingObserver {
             getListUser();
           });
           Get.snackbar("Online", "Internet Conneted");
-          //error = true;
-          //isLoading = false;
           print('Data connection is available.');
           break;
         case InternetConnectionStatus.disconnected:
